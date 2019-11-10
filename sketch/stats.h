@@ -1,4 +1,4 @@
-static enum Driving_State {
+enum Driving_State {
     standstill = 0,
     acceleration,
     strait,
@@ -7,7 +7,7 @@ static enum Driving_State {
     right_corner
 };
 
-static enum Object_State {
+enum Object_State {
     nothing = 0,
     front,
     left,
@@ -15,7 +15,7 @@ static enum Object_State {
     back
 };
 
-static enum Line_State {
+enum Line_State {
     not_recognized = 0,
     recognized
 };
