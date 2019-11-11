@@ -60,8 +60,36 @@ void loop() {
   }
 
   distance_measurement();
+
+  print_state();
 }
 
+void print_state() {
+  Serial.print("Driving State: ");
+  Serial.println(driving_state);
+
+  Serial.print("Object State: ");
+  Serial.println(object_State);
+
+  Serial.print("Line State: ");
+  Serial.println(line_State);
+
+
+  //TODO: implement print-format function
+  Serial.print("Distances: ");
+  Serial.print(distance_sensor_1);
+  Serial.print(" - ")
+  Serial.print(distance_sensor_2);
+  Serial.print(" - ")
+  Serial.print(distance_sensor_3);
+  Serial.print(" - ")
+  Serial.print(distance_sensor_4);
+  Serial.print(" - ")
+  Serial.print(distance_sensor_5);
+  Serial.print(" - ")
+  Serial.print(distance_sensor_6);
+
+}
 
 void updateStates() {
   //TODO: implementation
