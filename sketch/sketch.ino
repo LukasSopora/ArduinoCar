@@ -88,7 +88,6 @@ void print_state() {
   Serial.print(distance_sensor_5);
   Serial.print(" - ")
   Serial.print(distance_sensor_6);
-
 }
 
 void updateStates() {
