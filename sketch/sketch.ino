@@ -33,7 +33,6 @@
 #define TCS_S2 69
 #define TCS_S3 69
 #define TCS_sensor_out 69
-int tcs_color = 0;
 
 //Acceleration Configuration
 #define ACCELERATION_MAX_ITER 20
@@ -51,6 +50,7 @@ unsigned int distance_sensor_6;
 Driving_State driving_state = standing;
 Object_State object_State = nothing;
 Line_State line_State = not_recognized;
+Colors tcs_color = color_NONE;
 
 //TODO: Check if you can define multiple sensors with same trigger pin
 NewPing sensor_1(TRIG_PIN, ECHO_PIN_1, MAX_DISTANCE);
@@ -80,7 +80,7 @@ void leftRotation_90();
 void rightRotation_90();
 
 //Color Sensor Methods
-int readColor();
+void readColor();
 int readReadFreq();
 int readGreenFreq();
 int readBlueFreq();
@@ -177,8 +177,7 @@ void distanceMeasurement() {
 
 #pragma region Color Sensor Methods
 //TODO: check if delay between color freq reading is required
-int readColor() {
-
+void readColor() {
   int r = readReadFreq();
   delay(50);
   int g = readGreenFreq();
@@ -187,25 +186,23 @@ int readColor() {
 
 
   if(r<45 & r>32 & g<65 & g>55){
-    tcs_color = 1; // Red
+    tcs_color = color_red;
   }
   if(g<55 & g>43 & b<47 &b>35){
-    tcs_color = 2; // Orange
+    tcs_color = color_orange;
   }
   if(r<53 & r>40 & g<53 & g>40){
-    tcs_color = 3; // Green
+    tcs_color = color_green;
   }
   if(r<38 & r>24 & g<44 & g>30){
-    tcs_color = 4; // Yellow
+    tcs_color = color_yellow;
   }
   if(r<56 & r>46 & g<65 & g>55){
-    tcs_color = 5; // Brown
+    tcs_color = color_brown;
   }
   if (g<58 & g>45 & b<40 &b>26){
-    tcs_color = 6; // Blue
+    tcs_color = color_blue;
   }
-
-  return color;  
 }
 
 int readReadFreq() {
