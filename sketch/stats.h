@@ -29,4 +29,4 @@ enum Colors {
     color_yellow,
     color_brown,
     color_blue
-}
+};

@@ -2,23 +2,29 @@
 #include "stats.h"
 
 //TODO: Adjust Pins
-#define TRIG_PIN 9
-#define ECHO_PIN_1 8
-#define ECHO_PIN_2 3
-#define ECHO_PIN_3 4
-#define ECHO_PIN_4 5
-#define ECHO_PIN_5 6
-#define ECHO_PIN_6 7
+#define TRIG_PIN_1 53
+#define TRIG_PIN_2 47
+#define TRIG_PIN_3 45
+#define TRIG_PIN_4 28
+#define TRIG_PIN_5 30
+#define TRIG_PIN_6 32
+
+#define ECHO_PIN_1 51
+#define ECHO_PIN_2 49
+#define ECHO_PIN_3 43
+#define ECHO_PIN_4 69
+#define ECHO_PIN_5 69
+#define ECHO_PIN_6 69 
 
 //Motor 1-4 outputs
-#define MOTOR_FL_FORW 10
-#define MOTOR_FL_BACKW 11
-#define MOTOR_FR_FORW 12
-#define MOTOR_FR_BACKW 13
-#define MOTOR_BL_FORW 4
-#define MOTOR_BL_BACKW 5
-#define MOTOR_BR_FORW 3
-#define MOTOR_BR_BACKW 2
+#define MOTOR_FL_FORW 7
+#define MOTOR_FL_BACKW 6
+#define MOTOR_FR_FORW 9
+#define MOTOR_FR_BACKW 8
+#define MOTOR_BL_FORW 3
+#define MOTOR_BL_BACKW 2
+#define MOTOR_BR_FORW 4
+#define MOTOR_BR_BACKW 1
 
 //Ultrasonic Sensor Configuration
 #define MAX_DISTANCE 400
@@ -28,11 +34,11 @@
 #define CRITICAL_DISTANCE_RIGHT 5
 
 //Color Sensor TCS32000 Configuration
-#define TCS_S0 69
-#define TCS_S1 69
-#define TCS_S2 69
-#define TCS_S3 69
-#define TCS_sensor_out 69
+#define TCS_S0 22
+#define TCS_S1 24
+#define TCS_S2 26
+#define TCS_S3 28
+#define TCS_sensor_out 30
 
 //Acceleration Configuration
 #define ACCELERATION_MAX_ITER 20
@@ -44,12 +50,12 @@
 #define CORNER_MAX_ITER 50
 
 //Distances
-unsigned int distance_sensor_1;
-unsigned int distance_sensor_2;
-unsigned int distance_sensor_3;
-unsigned int distance_sensor_4;
-unsigned int distance_sensor_5;
-unsigned int distance_sensor_6;
+int distance_sensor_1;
+int distance_sensor_2;
+int distance_sensor_3;
+int distance_sensor_4;
+int distance_sensor_5;
+int distance_sensor_6;
 
 //Stats
 Driving_State driving_state = standing;
@@ -58,12 +64,12 @@ Line_State line_State = not_recognized;
 Colors tcs_color = color_NONE;
 
 //TODO: Check if you can define multiple sensors with same trigger pin
-NewPing sensor_1(TRIG_PIN, ECHO_PIN_1, MAX_DISTANCE);
-NewPing sensor_2(TRIG_PIN, ECHO_PIN_2, MAX_DISTANCE);
-NewPing sensor_3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
-NewPing sensor_4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
-NewPing sensor_5(TRIG_PIN, ECHO_PIN_5, MAX_DISTANCE);
-NewPing sensor_6(TRIG_PIN, ECHO_PIN_6, MAX_DISTANCE);
+NewPing sensor_1(TRIG_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
+NewPing sensor_2(TRIG_PIN_2, ECHO_PIN_2, MAX_DISTANCE);
+NewPing sensor_3(TRIG_PIN_3, ECHO_PIN_3, MAX_DISTANCE);
+NewPing sensor_4(TRIG_PIN_4, ECHO_PIN_4, MAX_DISTANCE);
+NewPing sensor_5(TRIG_PIN_5, ECHO_PIN_5, MAX_DISTANCE);
+NewPing sensor_6(TRIG_PIN_6, ECHO_PIN_6, MAX_DISTANCE);
 
 //Motor Handling Methods
 void motor_1_forw(int speed);
@@ -102,9 +108,6 @@ int driving_speed = 128;
 
 int corner_counter = 0;
 
-bool isStop;
-
-
 void setup() {
   setMotorPinModes();
 
@@ -112,14 +115,13 @@ void setup() {
   object_State = nothing;
   line_State = not_recognized;
 
-  isStop = true;
-
   Serial.begin(9600);
 }
 
 void loop() {
   distanceMeasurement();
 
+  /*
   if(distance_sensor_1 < 10 && driving_speed != standing) {
     Serial.println("Stop");
     //stand();
@@ -130,27 +132,30 @@ void loop() {
     //initAcceleration();
     driving_state = accelerating;
   }
+  */
 
+  
   //TODO: temp code for color sensor
   readColor();
   switch (tcs_color)
   {
-    case color_red: Serial.println("Red detected"); break;
-    case color_orange: Serial.println("Orange detected"); break;
-    case color_green: Serial.println("Green detected"); break;
-    case color_yellow: Serial.println("Yellow detected"); break;
-    case color_brown: Serial.println("Brown detected"); break;
-    case color_blue: Serial.println("Blue detected"); break;
-    case color_NONE: Serial.println("No color detected"); break;
+    case color_red: Serial.println("Red"); break;
+    case color_orange: Serial.println("Orange"); break;
+    case color_green: Serial.println("Green"); break;
+    case color_yellow: Serial.println("Yellow"); break;
+    case color_brown: Serial.println("Brown"); break;
+    case color_blue: Serial.println("Blue"); break;
+    case color_NONE: Serial.println("NONE"); break;
     default:
-      Serial.print("Could not read Color properly");
+      Serial.print("FAIL");
   }
 
-
+  /*
   //Increase counter in case the car is cornering
   if(driving_state == left_cornering || driving_state == right_cornering) {
     corner_counter ++;
   }
+  */
 }
 
 void print_states() {
@@ -189,21 +194,21 @@ void updateStates() {
 
 void setMotorPinModes() {
   pinMode(MOTOR_FL_FORW, OUTPUT);
-  pinMode(MOTOR1_BACKW, OUTPUT);
-  pinMode(MOTOR2_FORW, OUTPUT);
-  pinMode(MOTOR2_BACKW, OUTPUT);
-  pinMode(MOTOR3_FORW, OUTPUT);
-  pinMode(MOTOR3_BACKW, OUTPUT);
-  pinMode(MOTOR4_FORW, OUTPUT);
-  pinMode(MOTOR4_BACKW, OUTPUT);
+  pinMode(MOTOR_FL_BACKW, OUTPUT);
+  pinMode(MOTOR_FR_FORW, OUTPUT);
+  pinMode(MOTOR_FR_BACKW, OUTPUT);
+  pinMode(MOTOR_BL_FORW, OUTPUT);
+  pinMode(MOTOR_BL_BACKW, OUTPUT);
+  pinMode(MOTOR_BR_FORW, OUTPUT);
+  pinMode(MOTOR_BR_BACKW, OUTPUT);
 }
 
 //TODO: Check if delay between measurements is required
 //TODO: Check sensor meas order
 void distanceMeasurement() {
   distance_sensor_1 = sensor_1.ping_cm();
-  //distance_sensor_2 = sensor_2.ping_cm();
-  //distance_sensor_3 = sensor_3.ping_cm();
+  distance_sensor_2 = sensor_2.ping_cm();
+  distance_sensor_3 = sensor_3.ping_cm();
   //distance_sensor_4 = sensor_4.ping_cm();
   //distance_sensor_5 = sensor_5.ping_cm();
   //distance_sensor_6 = sensor_6.ping_cm();
@@ -279,58 +284,58 @@ void stand() {
 
 void leftRotation_90() {
   analogWrite(MOTOR_FL_FORW, 0);
-  analogWrite(MOTOR1_BACKW, driving_speed);
+  analogWrite(MOTOR_FL_BACKW, driving_speed);
 
-  analogWrite(MOTOR2_FORW, driving_speed);
-  analogWrite(MOTOR2_BACKW, 0);
+  analogWrite(MOTOR_FR_FORW, driving_speed);
+  analogWrite(MOTOR_FR_BACKW, 0);
 
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR3_BACKW, driving_speed);
+  analogWrite(MOTOR_BL_FORW, 0);
+  analogWrite(MOTOR_BL_BACKW, driving_speed);
 
-  analogWrite(MOTOR4_FORW, driving_speed);
-  analogWrite(MOTOR4_BACKW, 0);
+  analogWrite(MOTOR_BR_FORW, driving_speed);
+  analogWrite(MOTOR_BR_BACKW, 0);
 
   delay(1900);
 
   analogWrite(MOTOR_FL_FORW, 0);
-  analogWrite(MOTOR1_BACKW, 0);
+  analogWrite(MOTOR_FL_BACKW, 0);
 
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR2_BACKW, 0);
+  analogWrite(MOTOR_FR_FORW, 0);
+  analogWrite(MOTOR_FR_BACKW, 0);
 
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR3_BACKW, 0);
+  analogWrite(MOTOR_BL_FORW, 0);
+  analogWrite(MOTOR_BL_BACKW, 0);
 
-  analogWrite(MOTOR4_FORW, 0);
-  analogWrite(MOTOR4_BACKW, 0);
+  analogWrite(MOTOR_BR_FORW, 0);
+  analogWrite(MOTOR_BR_BACKW, 0);
 }
 
 void rightRotation_90() {
   analogWrite(MOTOR_FL_FORW, driving_speed);
-  analogWrite(MOTOR1_BACKW, 0);
+  analogWrite(MOTOR_FL_BACKW, 0);
 
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR2_BACKW, driving_speed);
+  analogWrite(MOTOR_FR_FORW, 0);
+  analogWrite(MOTOR_FR_BACKW, driving_speed);
 
-  analogWrite(MOTOR3_FORW, driving_speed);
-  analogWrite(MOTOR3_BACKW, 0);
+  analogWrite(MOTOR_BL_FORW, driving_speed);
+  analogWrite(MOTOR_BL_BACKW, 0);
 
-  analogWrite(MOTOR4_FORW, 0);
-  analogWrite(MOTOR4_BACKW, driving_speed);
+  analogWrite(MOTOR_BR_FORW, 0);
+  analogWrite(MOTOR_BR_BACKW, driving_speed);
 
   delay(1900);
 
   analogWrite(MOTOR_FL_FORW, 0);
-  analogWrite(MOTOR1_BACKW, 0);
+  analogWrite(MOTOR_FL_BACKW, 0);
 
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR2_BACKW, 0);
+  analogWrite(MOTOR_FR_FORW, 0);
+  analogWrite(MOTOR_FR_BACKW, 0);
 
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR3_BACKW, 0);
+  analogWrite(MOTOR_BL_FORW, 0);
+  analogWrite(MOTOR_BL_BACKW, 0);
 
-  analogWrite(MOTOR4_FORW, 0);
-  analogWrite(MOTOR4_BACKW, 0);
+  analogWrite(MOTOR_BR_FORW, 0);
+  analogWrite(MOTOR_BR_BACKW, 0);
 }
 
 void initLeftCorner() {
