@@ -119,39 +119,20 @@ void setup() {
 
 void loop() {
   distanceMeasurement();
+  if(object_State == nothing) {
+    readColor();
 
-  if(distance_sensor_1 < 10 && driving_speed != standing) {
-    Serial.println("Stop");
-    //stand();
-    driving_state = standing;
-  }
-  else if(distance_sensor_1 >= 10 && driving_state == standing) {
-    Serial.println("Start");
-    //initAcceleration();
-    driving_state = accelerating;
-  }
-
-  //TODO: temp code for color sensor
-  readColor();
-  switch (tcs_color)
-  {
-    case color_red: Serial.println("Red detected"); break;
-    case color_orange: Serial.println("Orange detected"); break;
-    case color_green: Serial.println("Green detected"); break;
-    case color_yellow: Serial.println("Yellow detected"); break;
-    case color_brown: Serial.println("Brown detected"); break;
-    case color_blue: Serial.println("Blue detected"); break;
-    case color_NONE: Serial.println("No color detected"); break;
-    default:
-      Serial.print("Could not read Color properly");
-  }
-
-
-  //Increase counter in case the car is cornering
-  if(driving_state == left_cornering || driving_state == right_cornering) {
-    corner_counter ++;
-  }
+    if(tcs_color == color_NONE) {
+      switch (driving_state)
+      {
+        case standing: initAcceleration(); break;
+        case accelerating: accelerate_counter++; break;
+        case left_cornering:
+        case right_cornering: corner_counter++; break;
+      }
+    }
 }
+
 
 void print_states() {
   Serial.print("Driving State: ");
