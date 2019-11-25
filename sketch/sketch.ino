@@ -81,7 +81,7 @@ void setMotorPinModes();
 void distanceMeasurement();
 
 //Driving Methods
-void accelerate();
+void initAcceleration();
 void forward();
 void stand();
 void leftRotation_90();
@@ -127,9 +127,9 @@ void loop() {
   }
   else if(distance_sensor_1 >= 10 && driving_state == standing) {
     Serial.println("Start");
-    //accelerate();
+    //initAcceleration();
     driving_state = accelerating;
-  }  
+  }
 
   //TODO: temp code for color sensor
   readColor();
@@ -259,22 +259,13 @@ int readBlueFreq() {
 #pragma endregion
 
 #pragma region Movement Methods
-void accelerate() {
-  if(accelerate_counter < ACCELERATION_MAX_ITER) {
-    motor_1_forw(accelerating_speed);
-    motor_2_forw(accelerating_speed);
-    motor_3_forw(accelerating_speed);
-    motor_4_forw(accelerating_speed);
-    accelerate_counter++;
-  }
-  else {
-    motor_1_forw(driving_speed);
-    motor_2_forw(driving_speed);
-    motor_3_forw(driving_speed);
-    motor_4_forw(driving_speed);
-  }
-
-  driving_state = straight;
+void initAcceleration() {
+  accelerate_counter = 0;
+  motor_1_forw(accelerating_speed);
+  motor_2_forw(accelerating_speed);
+  motor_3_forw(accelerating_speed);
+  motor_4_forw(accelerating_speed);
+  driving_state = accelerating;
 }
 
 void stand() {

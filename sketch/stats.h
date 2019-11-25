@@ -2,11 +2,8 @@ enum Driving_State {
     standing = 0,
     accelerating,
     straight,
-    breaking,
     left_cornering,
-    right_cornering,
-    left_rotating_90,
-    right_rotating_90
+    right_cornering
 };
 
 enum Object_State {
