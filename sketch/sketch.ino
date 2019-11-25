@@ -27,6 +27,14 @@
 #define CRITICAL_DISTANCE_LEFT 5
 #define CRITICAL_DISTANCE_RIGHT 5
 
+//Color Sensor TCS32000 Configuration
+#define TCS_S0 69
+#define TCS_S1 69
+#define TCS_S2 69
+#define TCS_S3 69
+#define TCS_sensor_out 69
+int tcs_color = 0;
+
 //Acceleration Configuration
 #define ACCELERATION_MAX_ITER 20
 #define ACCELERATION_PAUSE 200
@@ -67,9 +75,15 @@ void updateStates();
 void setMotorPinModes();
 void accelerate();
 void stand();
-void distance_measurement();
+void distanceMeasurement();
 void leftRotation_90();
 void rightRotation_90();
+
+//Color Sensor Methods
+int readColor();
+int readReadFreq();
+int readGreenFreq();
+int readBlueFreq();
 
 int accelerating_speed = 255;
 int accelerate_counter = 0;
@@ -91,17 +105,17 @@ void setup() {
 }
 
 void loop() {
-  distance_measurement();
+  distanceMeasurement();
 
-  if(distance_sensor_1 < 10 && !isStop) {
+  if(distance_sensor_1 < 10 && driving_speed != standing) {
     Serial.println("Stop");
     //stand();
-    isStop = true;
+    driving_state = standing;
   }
-  else if(distance_sensor_1 >= 10 && isStop) {
+  else if(distance_sensor_1 >= 10 && driving_state == standing) {
     Serial.println("Start");
     //accelerate();
-    isStop = false;
+    driving_state = accelerating;
   }
 }
 
@@ -152,7 +166,7 @@ void setMotorPinModes() {
 
 //TODO: Check if delay between measurements is required
 //TODO: Check sensor meas order
-void distance_measurement() {
+void distanceMeasurement() {
   distance_sensor_1 = sensor_1.ping_cm();
   //distance_sensor_2 = sensor_2.ping_cm();
   //distance_sensor_3 = sensor_3.ping_cm();
@@ -160,6 +174,58 @@ void distance_measurement() {
   //distance_sensor_5 = sensor_5.ping_cm();
   //distance_sensor_6 = sensor_6.ping_cm();
 }
+
+#pragma region Color Sensor Methods
+//TODO: check if delay between color freq reading is required
+int readColor() {
+
+  int r = readReadFreq();
+  delay(50);
+  int g = readGreenFreq();
+  delay(50);
+  int b = readBlueFreq();
+
+
+  if(r<45 & r>32 & g<65 & g>55){
+    tcs_color = 1; // Red
+  }
+  if(g<55 & g>43 & b<47 &b>35){
+    tcs_color = 2; // Orange
+  }
+  if(r<53 & r>40 & g<53 & g>40){
+    tcs_color = 3; // Green
+  }
+  if(r<38 & r>24 & g<44 & g>30){
+    tcs_color = 4; // Yellow
+  }
+  if(r<56 & r>46 & g<65 & g>55){
+    tcs_color = 5; // Brown
+  }
+  if (g<58 & g>45 & b<40 &b>26){
+    tcs_color = 6; // Blue
+  }
+
+  return color;  
+}
+
+int readReadFreq() {
+  digitalWrite(TCS_S2, LOW);
+  digitalWrite(TCS_S3, LOW);
+  return pulseIn(TCS_sensor_out, LOW);
+}
+
+int readGreenFreq() {
+  digitalWrite(TCS_S2, HIGH);
+  digitalWrite(TCS_S3, HIGH);
+  return pulseIn(TCS_sensor_out, LOW);
+}
+
+int readBlueFreq() {
+  digitalWrite(TCS_S2, LOW);
+  digitalWrite(TCS_S3, HIGH);
+  return pulseIn(TCS_sensor_out, LOW);
+}
+#pragma endregion
 
 #pragma region Movement Methods
 void accelerate() {
