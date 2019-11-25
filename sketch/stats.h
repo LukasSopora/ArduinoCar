@@ -1,15 +1,19 @@
 enum Driving_State {
-    standstill = 0,
-    acceleration,
-    strait,
+    standing = 0,
+    accelerating,
+    straight,
     breaking,
-    left_corner,
-    right_corner
+    left_turning,
+    right_turning,
+    left_rotating_90,
+    right_rotating_90
 };
 
 enum Object_State {
     nothing = 0,
-    front,
+    front_left,
+    front_center,
+    front_right,
     left,
     right,
     back

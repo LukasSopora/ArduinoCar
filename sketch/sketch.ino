@@ -11,19 +11,25 @@
 #define ECHO_PIN_6 7
 
 //Motor 1-4 outputs
-#define MOTOR1_FORW 10
-#define MOTOR1_BACKW 11
-#define MOTOR2_FORW 12
-#define MOTOR2_BACKW 13
-#define MOTOR3_FORW 4
-#define MOTOR3_BACKW 5
-#define MOTOR4_FORW 3
-#define MOTOR4_BACKW 2
+#define MOTOR_FL_FORW 10
+#define MOTOR_FL_BACKW 11
+#define MOTOR_FR_FORW 12
+#define MOTOR_FR_BACKW 13
+#define MOTOR_BL_FORW 4
+#define MOTOR_BL_BACKW 5
+#define MOTOR_BR_FORW 3
+#define MOTOR_BR_BACKW 2
 
-int speed = 128; 
-
-//Ultrasonic Sensor max distance is 400cm
+//Ultrasonic Sensor Configuration
 #define MAX_DISTANCE 400
+#define CRITICAL_DISTANCE_FRONT 10
+#define CRITICAL_DISTANCE_BACK 10
+#define CRITICAL_DISTANCE_LEFT 5
+#define CRITICAL_DISTANCE_RIGHT 5
+
+//Acceleration Configuration
+#define ACCELERATION_MAX_ITER 20
+#define ACCELERATION_PAUSE 200
 
 //Distances
 unsigned int distance_sensor_1;
@@ -34,7 +40,7 @@ unsigned int distance_sensor_5;
 unsigned int distance_sensor_6;
 
 //Stats
-Driving_State driving_state = standstill;
+Driving_State driving_state = standing;
 Object_State object_State = nothing;
 Line_State line_State = not_recognized;
 
@@ -46,14 +52,28 @@ NewPing sensor_4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 NewPing sensor_5(TRIG_PIN, ECHO_PIN_5, MAX_DISTANCE);
 NewPing sensor_6(TRIG_PIN, ECHO_PIN_6, MAX_DISTANCE);
 
-void print_state();
+//Motor Handling Methods
+void motor_1_forw(int speed);
+void motor_1_backw(int speed);
+void motor_2_forw(int speed);
+void motor_2_backw(int speed);
+void motor_3_forw(int speed);
+void motor_3_backw(int speed);
+void motor_4_forw(int speed);
+void motor_4_backw(int speed);
+
+void print_states();
 void updateStates();
 void setMotorPinModes();
 void accelerate();
 void stand();
 void distance_measurement();
-void leftTurn();
-void rightTurn();
+void leftRotation_90();
+void rightRotation_90();
+
+int accelerating_speed = 255;
+int accelerate_counter = 0;
+int driving_speed = 128;
 
 bool isStop;
 
@@ -61,32 +81,13 @@ bool isStop;
 void setup() {
   setMotorPinModes();
 
+  driving_state = standing;
+  object_State = nothing;
+  line_State = not_recognized;
+
   isStop = true;
 
   Serial.begin(9600);
-  
-  analogWrite(MOTOR4_FORW, speed);
-  analogWrite(MOTOR3_FORW, speed);
-  analogWrite(MOTOR2_FORW, speed);
-  analogWrite(MOTOR1_FORW, speed);
-  delay(1000);
-
-  analogWrite(MOTOR1_FORW, 0);
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR4_FORW, 0);
-
-  delay(1000);
-  analogWrite(MOTOR4_BACKW, speed);
-  analogWrite(MOTOR3_BACKW, speed);
-  analogWrite(MOTOR2_BACKW, speed);
-  analogWrite(MOTOR1_BACKW, speed);
-  delay(1000);
-
-  analogWrite(MOTOR1_BACKW, 0);
-  analogWrite(MOTOR2_BACKW, 0);
-  analogWrite(MOTOR3_BACKW, 0);
-  analogWrite(MOTOR4_BACKW, 0);
 }
 
 void loop() {
@@ -104,63 +105,7 @@ void loop() {
   }
 }
 
-void leftTurn() {
-  analogWrite(MOTOR1_FORW, 0);
-  analogWrite(MOTOR1_BACKW, speed);
-
-  analogWrite(MOTOR2_FORW, speed);
-  analogWrite(MOTOR2_BACKW, 0);
-
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR3_BACKW, speed);
-
-  analogWrite(MOTOR4_FORW, speed);
-  analogWrite(MOTOR4_BACKW, 0);
-
-  delay(1900);
-
-  analogWrite(MOTOR1_FORW, 0);
-  analogWrite(MOTOR1_BACKW, 0);
-
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR2_BACKW, 0);
-
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR3_BACKW, 0);
-
-  analogWrite(MOTOR4_FORW, 0);
-  analogWrite(MOTOR4_BACKW, 0);
-}
-
-void rightTurn() {
-  analogWrite(MOTOR1_FORW, speed);
-  analogWrite(MOTOR1_BACKW, 0);
-
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR2_BACKW, speed);
-
-  analogWrite(MOTOR3_FORW, speed);
-  analogWrite(MOTOR3_BACKW, 0);
-
-  analogWrite(MOTOR4_FORW, 0);
-  analogWrite(MOTOR4_BACKW, speed);
-
-  delay(1900);
-
-  analogWrite(MOTOR1_FORW, 0);
-  analogWrite(MOTOR1_BACKW, 0);
-
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR2_BACKW, 0);
-
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR3_BACKW, 0);
-
-  analogWrite(MOTOR4_FORW, 0);
-  analogWrite(MOTOR4_BACKW, 0);
-}
-
-void print_state() {
+void print_states() {
   Serial.print("Driving State: ");
   Serial.println(driving_state);
 
@@ -170,7 +115,6 @@ void print_state() {
   Serial.print("Line State: ");
   Serial.println(line_State);
 
-  //TODO: implement print-format function
   Serial.print("Distances: ");
   Serial.print(distance_sensor_1);
   Serial.print(" - ");
@@ -188,7 +132,7 @@ void print_state() {
 void updateStates() {
   //TODO: implementation
   if(distance_sensor_1 < 10) {
-    object_State = front;
+    object_State = front_center;
   }
   else {
     object_State = nothing;
@@ -196,7 +140,7 @@ void updateStates() {
 }
 
 void setMotorPinModes() {
-  pinMode(MOTOR1_FORW, OUTPUT);
+  pinMode(MOTOR_FL_FORW, OUTPUT);
   pinMode(MOTOR1_BACKW, OUTPUT);
   pinMode(MOTOR2_FORW, OUTPUT);
   pinMode(MOTOR2_BACKW, OUTPUT);
@@ -204,24 +148,6 @@ void setMotorPinModes() {
   pinMode(MOTOR3_BACKW, OUTPUT);
   pinMode(MOTOR4_FORW, OUTPUT);
   pinMode(MOTOR4_BACKW, OUTPUT);
-}
-
-void accelerate() {
-  analogWrite(MOTOR1_FORW, speed);
-  analogWrite(MOTOR2_FORW, speed);
-  analogWrite(MOTOR3_FORW, speed);
-  analogWrite(MOTOR4_FORW, speed);
-  
-  driving_state = strait;
-}
-
-void stand() {
-  analogWrite(MOTOR1_FORW, 0);
-  analogWrite(MOTOR2_FORW, 0);
-  analogWrite(MOTOR3_FORW, 0);
-  analogWrite(MOTOR4_FORW, 0);
-  
-  driving_state = strait;
 }
 
 //TODO: Check if delay between measurements is required
@@ -234,3 +160,130 @@ void distance_measurement() {
   //distance_sensor_5 = sensor_5.ping_cm();
   //distance_sensor_6 = sensor_6.ping_cm();
 }
+
+#pragma region Movement Methods
+void accelerate() {
+  if(accelerate_counter < ACCELERATION_MAX_ITER) {
+    motor_1_forw(accelerating_speed);
+    motor_2_forw(accelerating_speed);
+    motor_3_forw(accelerating_speed);
+    motor_4_forw(accelerating_speed);
+    accelerate_counter++;
+  }
+  else {
+    motor_1_forw(driving_speed);
+    motor_2_forw(driving_speed);
+    motor_3_forw(driving_speed);
+    motor_4_forw(driving_speed);
+  }
+
+  driving_state = straight;
+}
+
+void stand() {
+  motor_1_forw(0);
+  motor_2_forw(0);
+  motor_3_forw(0);
+  motor_4_forw(0);
+
+  driving_state = standing;
+}
+
+void leftRotation_90() {
+  analogWrite(MOTOR_FL_FORW, 0);
+  analogWrite(MOTOR1_BACKW, driving_speed);
+
+  analogWrite(MOTOR2_FORW, driving_speed);
+  analogWrite(MOTOR2_BACKW, 0);
+
+  analogWrite(MOTOR3_FORW, 0);
+  analogWrite(MOTOR3_BACKW, driving_speed);
+
+  analogWrite(MOTOR4_FORW, driving_speed);
+  analogWrite(MOTOR4_BACKW, 0);
+
+  delay(1900);
+
+  analogWrite(MOTOR_FL_FORW, 0);
+  analogWrite(MOTOR1_BACKW, 0);
+
+  analogWrite(MOTOR2_FORW, 0);
+  analogWrite(MOTOR2_BACKW, 0);
+
+  analogWrite(MOTOR3_FORW, 0);
+  analogWrite(MOTOR3_BACKW, 0);
+
+  analogWrite(MOTOR4_FORW, 0);
+  analogWrite(MOTOR4_BACKW, 0);
+}
+
+void rightRotation_90() {
+  analogWrite(MOTOR_FL_FORW, driving_speed);
+  analogWrite(MOTOR1_BACKW, 0);
+
+  analogWrite(MOTOR2_FORW, 0);
+  analogWrite(MOTOR2_BACKW, driving_speed);
+
+  analogWrite(MOTOR3_FORW, driving_speed);
+  analogWrite(MOTOR3_BACKW, 0);
+
+  analogWrite(MOTOR4_FORW, 0);
+  analogWrite(MOTOR4_BACKW, driving_speed);
+
+  delay(1900);
+
+  analogWrite(MOTOR_FL_FORW, 0);
+  analogWrite(MOTOR1_BACKW, 0);
+
+  analogWrite(MOTOR2_FORW, 0);
+  analogWrite(MOTOR2_BACKW, 0);
+
+  analogWrite(MOTOR3_FORW, 0);
+  analogWrite(MOTOR3_BACKW, 0);
+
+  analogWrite(MOTOR4_FORW, 0);
+  analogWrite(MOTOR4_BACKW, 0);
+}
+#pragma endregion
+
+#pragma region Motor Handling Methods
+void motor_1_forw(int speed) {
+  analogWrite(MOTOR_FL_BACKW, 0);
+  analogWrite(MOTOR_FL_FORW, speed);
+}
+
+void motor_1_backw(int speed) {
+  analogWrite(MOTOR_FL_FORW, 0);
+  analogWrite(MOTOR_FL_BACKW, speed);
+}
+
+void motor_2_forw(int speed) {
+  analogWrite(MOTOR_FR_BACKW, 0);
+  analogWrite(MOTOR_FR_FORW, speed);
+}
+
+void motor_2_backw(int speed) {
+  analogWrite(MOTOR_FR_FORW, 0);
+  analogWrite(MOTOR_FR_BACKW, speed);
+}
+
+void motor_3_forw(int speed) {
+  analogWrite(MOTOR_BL_BACKW, 0);
+  analogWrite(MOTOR_BL_FORW, speed);
+}
+
+void motor_3_backw(int speed) {
+  analogWrite(MOTOR_BL_FORW, 0);
+  analogWrite(MOTOR_BL_BACKW, speed);
+}
+
+void motor_4_forw(int speed) {
+  analogWrite(MOTOR_BR_BACKW, 0);
+  analogWrite(MOTOR_BR_FORW, speed);
+}
+
+void motor_4_backw(int speed) {
+  analogWrite(MOTOR_BR_FORW, 0);
+  analogWrite(MOTOR_BR_BACKW, speed);
+}
+#pragma endregion
