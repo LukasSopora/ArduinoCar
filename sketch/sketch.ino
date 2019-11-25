@@ -129,7 +129,23 @@ void loop() {
     Serial.println("Start");
     //accelerate();
     driving_state = accelerating;
+  }  
+
+  //TODO: temp code for color sensor
+  readColor();
+  switch (tcs_color)
+  {
+    case color_red: Serial.println("Red detected"); break;
+    case color_orange: Serial.println("Orange detected"); break;
+    case color_green: Serial.println("Green detected"); break;
+    case color_yellow: Serial.println("Yellow detected"); break;
+    case color_brown: Serial.println("Brown detected"); break;
+    case color_blue: Serial.println("Blue detected"); break;
+    case color_NONE: Serial.println("No color detected"); break;
+    default:
+      Serial.print("Could not read Color properly");
   }
+
 
   //Increase counter in case the car is cornering
   if(driving_state == left_cornering || driving_state == right_cornering) {
