@@ -3,8 +3,8 @@ enum Driving_State {
     accelerating,
     straight,
     breaking,
-    left_turning,
-    right_turning,
+    left_cornering,
+    right_cornering,
     left_rotating_90,
     right_rotating_90
 };
@@ -23,3 +23,13 @@ enum Line_State {
     not_recognized = 0,
     recognized
 };
+
+enum Colors {
+    color_NONE = 0,
+    color_red,
+    color_orange,
+    color_green,
+    color_yellow,
+    color_brown,
+    color_blue
+}

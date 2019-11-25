@@ -38,6 +38,11 @@
 #define ACCELERATION_MAX_ITER 20
 #define ACCELERATION_PAUSE 200
 
+//Cornerung Configuration
+#define CORNER_SPEED_OUTSIDE 128
+#define CORNER_SPEED_INSIDE 64
+#define CORNER_MAX_ITER 50
+
 //Distances
 unsigned int distance_sensor_1;
 unsigned int distance_sensor_2;
@@ -73,11 +78,17 @@ void motor_4_backw(int speed);
 void print_states();
 void updateStates();
 void setMotorPinModes();
-void accelerate();
-void stand();
 void distanceMeasurement();
+
+//Driving Methods
+void accelerate();
+void forward();
+void stand();
 void leftRotation_90();
 void rightRotation_90();
+void initLeftCorner();
+void initRightCorner();
+void resetCorner();
 
 //Color Sensor Methods
 void readColor();
@@ -88,6 +99,8 @@ int readBlueFreq();
 int accelerating_speed = 255;
 int accelerate_counter = 0;
 int driving_speed = 128;
+
+int corner_counter = 0;
 
 bool isStop;
 
@@ -116,6 +129,11 @@ void loop() {
     Serial.println("Start");
     //accelerate();
     driving_state = accelerating;
+  }
+
+  //Increase counter in case the car is cornering
+  if(driving_state == left_cornering || driving_state == right_cornering) {
+    corner_counter ++;
   }
 }
 
@@ -306,6 +324,35 @@ void rightRotation_90() {
 
   analogWrite(MOTOR4_FORW, 0);
   analogWrite(MOTOR4_BACKW, 0);
+}
+
+void initLeftCorner() {
+  motor_1_forw(CORNER_SPEED_INSIDE);
+  motor_2_forw(CORNER_SPEED_OUTSIDE);
+  motor_3_forw(CORNER_SPEED_INSIDE);
+  motor_4_forw(CORNER_SPEED_OUTSIDE);
+
+  corner_counter = 0;
+  driving_state = left_cornering;
+}
+
+void initRightCorner() {
+  motor_1_forw(CORNER_SPEED_OUTSIDE);
+  motor_2_forw(CORNER_SPEED_INSIDE);
+  motor_3_forw(CORNER_SPEED_OUTSIDE);
+  motor_4_forw(CORNER_SPEED_INSIDE);
+
+  corner_counter = 0;
+  driving_state = right_cornering;
+}
+
+void forward() {
+  motor_1_forw(driving_speed);
+  motor_2_forw(driving_speed);
+  motor_3_forw(driving_speed);
+  motor_4_forw(driving_speed);
+
+  driving_state = straight;
 }
 #pragma endregion
 
