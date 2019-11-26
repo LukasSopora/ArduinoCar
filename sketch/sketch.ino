@@ -17,14 +17,14 @@
 #define ECHO_PIN_6 69 
 
 //Motor 1-4 outputs
-#define MOTOR_FL_FORW 7
-#define MOTOR_FL_BACKW 6
-#define MOTOR_FR_FORW 9
-#define MOTOR_FR_BACKW 8
-#define MOTOR_BL_FORW 3
-#define MOTOR_BL_BACKW 2
-#define MOTOR_BR_FORW 4
-#define MOTOR_BR_BACKW 1
+#define MOTOR_FL_FORW 28
+#define MOTOR_FL_BACKW 29
+#define MOTOR_FR_FORW 26
+#define MOTOR_FR_BACKW 27
+#define MOTOR_BL_FORW 22
+#define MOTOR_BL_BACKW 23
+#define MOTOR_BR_FORW 24
+#define MOTOR_BR_BACKW 25
 
 //Ultrasonic Sensor Configuration
 #define MAX_DISTANCE 400
@@ -34,11 +34,14 @@
 #define CRITICAL_DISTANCE_RIGHT 5
 
 //Color Sensor TCS32000 Configuration
-#define TCS_S0 22
-#define TCS_S1 24
-#define TCS_S2 26
-#define TCS_S3 28
-#define TCS_sensor_out 30
+#define TCS_S0 13
+#define TCS_S1 12
+#define TCS_S2 11
+#define TCS_S3 10
+#define TCS_sensor_out 9
+
+//RGB ratio for color recognizion
+#define COLOR_RATIO 0.7
 
 //Acceleration Configuration
 #define ACCELERATION_MAX_ITER 20
@@ -98,10 +101,17 @@ void resetCorner();
 
 //Color Sensor Methods
 void readColor();
-int readReadFreq();
-int readGreenFreq();
-int readBlueFreq();
+void initColorSensor();
 
+//Color Sensor Variables
+int freqRed = 0;
+int freqGreen = 0;
+int freqBlue = 0;
+
+double ratioRed = 0;
+double ratioBlue = 0;
+
+//Speed Variables
 int accelerating_speed = 255;
 int accelerate_counter = 0;
 int driving_speed = 128;
@@ -114,6 +124,8 @@ void setup() {
   driving_state = standing;
   object_State = nothing;
   line_State = not_recognized;
+
+  initColorSensor();
 
   Serial.begin(9600);
 }
@@ -134,21 +146,6 @@ void loop() {
   }
   */
 
-  
-  //TODO: temp code for color sensor
-  readColor();
-  switch (tcs_color)
-  {
-    case color_red: Serial.println("Red"); break;
-    case color_orange: Serial.println("Orange"); break;
-    case color_green: Serial.println("Green"); break;
-    case color_yellow: Serial.println("Yellow"); break;
-    case color_brown: Serial.println("Brown"); break;
-    case color_blue: Serial.println("Blue"); break;
-    case color_NONE: Serial.println("NONE"); break;
-    default:
-      Serial.print("FAIL");
-  }
 
   /*
   //Increase counter in case the car is cornering
@@ -216,50 +213,49 @@ void distanceMeasurement() {
 
 #pragma region Color Sensor Methods
 //TODO: check if delay between color freq reading is required
-void readColor() {
-  int r = readReadFreq();
-  delay(50);
-  int g = readGreenFreq();
-  delay(50);
-  int b = readBlueFreq();
+void initColorSensor() {
+  pinMode(TCS_S0, OUTPUT);
+  pinMode(TCS_S1, OUTPUT);
+  pinMode(TCS_S2, OUTPUT);
+  pinMode(TCS_S3, OUTPUT);
+  pinMode(TCS_sensor_out, OUTPUT);
 
-
-  if(r<45 & r>32 & g<65 & g>55){
-    tcs_color = color_red;
-  }
-  if(g<55 & g>43 & b<47 &b>35){
-    tcs_color = color_orange;
-  }
-  if(r<53 & r>40 & g<53 & g>40){
-    tcs_color = color_green;
-  }
-  if(r<38 & r>24 & g<44 & g>30){
-    tcs_color = color_yellow;
-  }
-  if(r<56 & r>46 & g<65 & g>55){
-    tcs_color = color_brown;
-  }
-  if (g<58 & g>45 & b<40 &b>26){
-    tcs_color = color_blue;
-  }
+  //Set Output Frequency Scaling to 2%
+  digitalWrite(TCS_S0, LOW);
+  digitalWrite(TCS_S1, HIGH);
 }
 
-int readReadFreq() {
+void readColor() {
+  //Read red freq
   digitalWrite(TCS_S2, LOW);
   digitalWrite(TCS_S3, LOW);
-  return pulseIn(TCS_sensor_out, LOW);
-}
+  freqRed = pulseIn(TCS_sensor_out, LOW);
 
-int readGreenFreq() {
+  //Read green freq
   digitalWrite(TCS_S2, HIGH);
   digitalWrite(TCS_S3, HIGH);
-  return pulseIn(TCS_sensor_out, LOW);
-}
+  freqGreen = pulseIn(TCS_sensor_out, LOW);
 
-int readBlueFreq() {
+  //Read blue freq
   digitalWrite(TCS_S2, LOW);
   digitalWrite(TCS_S3, HIGH);
-  return pulseIn(TCS_sensor_out, LOW);
+  freqBlue = pulseIn(TCS_sensor_out, LOW);
+
+  ratioRed = (double) freqRed / ((freqGreen + freqBlue) / 2);
+
+  if(ratioRed < COLOR_RATIO) {
+    tcs_color = color_red;
+  }
+  else {
+    ratioBlue = (double) freqBlue / ((freqRed + freqGreen) / 2);
+
+    if(ratioBlue < COLOR_RATIO) {
+      tcs_color = color_blue;
+    }
+    else {
+      tcs_color = color_NONE;
+    }
+  }
 }
 #pragma endregion
 

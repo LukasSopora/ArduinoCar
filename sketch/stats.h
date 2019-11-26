@@ -24,9 +24,5 @@ enum Line_State {
 enum Colors {
     color_NONE = 0,
     color_red,
-    color_orange,
-    color_green,
-    color_yellow,
-    color_brown,
     color_blue
 };
