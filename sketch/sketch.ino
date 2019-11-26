@@ -133,6 +133,17 @@ void setup() {
 void loop() {
   distanceMeasurement();
 
+  readColor();
+
+  switch (tcs_color)
+  {
+  case color_red: Serial.println("Red"); break;
+  case color_blue: Serial.println("Blue"); break;
+  case color_NONE: Serial.println("None"); break;
+  
+  default: Serial.println("Fail"); break;
+  }
+  
   /*
   if(distance_sensor_1 < 10 && driving_speed != standing) {
     Serial.println("Stop");
@@ -218,7 +229,7 @@ void initColorSensor() {
   pinMode(TCS_S1, OUTPUT);
   pinMode(TCS_S2, OUTPUT);
   pinMode(TCS_S3, OUTPUT);
-  pinMode(TCS_sensor_out, OUTPUT);
+  pinMode(TCS_sensor_out, INPUT);
 
   //Set Output Frequency Scaling to 2%
   digitalWrite(TCS_S0, LOW);
