@@ -1,13 +1,14 @@
 #include <NewPing.h>
 #include "stats.h"
 
-//TODO: Adjust Pins
+//Ultrasonic Trigger Pins
 #define TRIG_PIN_1 53
 #define TRIG_PIN_2 47
 #define TRIG_PIN_3 45
 #define TRIG_PIN_4 4
 #define TRIG_PIN_5 2
 
+//Ultrasonic Echo Pins
 #define ECHO_PIN_1 51
 #define ECHO_PIN_2 49
 #define ECHO_PIN_3 43
@@ -66,7 +67,7 @@ Object_State object_State = nothing;
 Colors tcs_color = color_NONE;
 Dodge_State dodge_state = dodge_NONE;
 
-//TODO: Check if you can define multiple sensors with same trigger pin
+//Ultrasonic Sensors
 NewPing sensor_1(TRIG_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
 NewPing sensor_2(TRIG_PIN_2, ECHO_PIN_2, MAX_DISTANCE);
 NewPing sensor_3(TRIG_PIN_3, ECHO_PIN_3, MAX_DISTANCE);
@@ -84,7 +85,6 @@ void motor_4_forw(int speed);
 void motor_4_backw(int speed);
 
 void print_states();
-void updateStates();
 void setMotorPinModes();
 void distanceMeasurement();
 
@@ -243,16 +243,6 @@ void print_states() {
   Serial.print(" - ");
   Serial.print(distance_sensor_5);
 
-}
-
-void updateStates() {
-  //TODO: implementation
-  if(distance_sensor_1 < 10) {
-    object_State = front_center;
-  }
-  else {
-    object_State = nothing;
-  }
 }
 
 void setMotorPinModes() {
