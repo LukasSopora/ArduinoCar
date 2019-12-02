@@ -46,11 +46,7 @@
 //Acceleration Configuration
 #define ACCELERATION_MAX_ITER 20
 #define ACCELERATION_PAUSE 200
-
-//Cornerung Configuration
-#define CORNER_SPEED_OUTSIDE 128
-#define CORNER_SPEED_INSIDE 64
-#define CORNER_MAX_ITER 50
+#define ROTATION_90_DELAY 1900
 
 //Distances
 int distance_sensor_1;
@@ -95,7 +91,6 @@ void forward();
 void stand();
 void leftRotation_90();
 void rightRotation_90();
-void resetCorner();
 
 //Color Sensor Methods
 void readColor();
@@ -113,8 +108,6 @@ double ratioBlue = 0;
 int accelerating_speed = 255;
 int accelerate_counter = 0;
 int driving_speed = 128;
-
-int corner_counter = 0;
 
 void setup() {
   setMotorPinModes();
@@ -151,14 +144,6 @@ void loop() {
     Serial.println("Start");
     //initAcceleration();
     driving_state = accelerating;
-  }
-  */
-
-
-  /*
-  //Increase counter in case the car is cornering
-  if(driving_state == left_cornering || driving_state == right_cornering) {
-    corner_counter ++;
   }
   */
 }
@@ -296,7 +281,7 @@ void leftRotation_90() {
   analogWrite(MOTOR_BR_FORW, driving_speed);
   analogWrite(MOTOR_BR_BACKW, 0);
 
-  delay(1900);
+  delay(ROTATION_90_DELAY);
 
   analogWrite(MOTOR_FL_FORW, 0);
   analogWrite(MOTOR_FL_BACKW, 0);
@@ -324,7 +309,7 @@ void rightRotation_90() {
   analogWrite(MOTOR_BR_FORW, 0);
   analogWrite(MOTOR_BR_BACKW, driving_speed);
 
-  delay(1900);
+  delay(ROTATION_90_DELAY);
 
   analogWrite(MOTOR_FL_FORW, 0);
   analogWrite(MOTOR_FL_BACKW, 0);
