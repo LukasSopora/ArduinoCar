@@ -142,17 +142,17 @@ void setup() {
 }
 
 void loop() {
-  distanceMeasurement();
 
+  distanceMeasurement();
   readColor();
 
   switch (tcs_color)
   {
-  case color_red: Serial.println("Red"); break;
-  case color_blue: Serial.println("Blue"); break;
-  case color_NONE: Serial.println("None"); break;
+    case color_red: Serial.println("Red"); break;
+    case color_blue: Serial.println("Blue"); break;
+    case color_NONE: Serial.println("None"); break;
   
-  default: Serial.println("Fail"); break;
+    default: Serial.println("Fail"); break;
   }
   
   /*
@@ -338,6 +338,7 @@ void dodgeLeft1() {
     }
   }
 }
+
 void dodgeLeft2() {
   if(driving_state == standing) {
     //Initial Case
@@ -379,9 +380,72 @@ void dodgeLeft3() {
   }
 }
 
-void dodgeRight1() {}
-void dodgeRight2() {}
-void dodgeRight3() {}
+void dodgeRight1() {
+  if(dodge_state == dodge_NONE && driving_state == standing) {
+    //Initial Case
+    rightRotation_90();
+    forward();
+    dodgeDistanceCounter = 0;
+    dodgeFreeCounter = 0;
+    dodge_state = dodge_right_step_1;
+  }
+  else if(dodge_state == dodge_right_step_1) {
+    
+    //Working Case
+    dodgeDistanceCounter++;
+
+    if(distance_sensor_4 > 15) {
+      dodgeFreeCounter++;
+    }
+
+    if(dodgeFreeCounter >= DODGE_DISTANCE_MAX_ITER) {
+      stand();
+      delay(MOTOR_DELAY);
+      leftRotation_90();
+      delay(MOTOR_DELAY);
+      dodge_state = dodge_right_step_2;
+    }
+  }
+}
+void dodgeRight2() {
+  if(driving_state == standing) {
+    //Initial Case
+    dodgeFreeCounter = 0;
+    forward();
+  }
+  else {
+    //Working case
+    if(distance_sensor_4 > 15) {
+      dodgeFreeCounter++;
+    }
+
+    if(dodgeFreeCounter >= DODGE_DISTANCE_MAX_ITER) {
+      stand();
+      delay(MOTOR_DELAY);
+      leftRotation_90();
+      delay(MOTOR_DELAY);
+      dodge_state = dodge_right_step_3;
+    }
+  }
+}
+void dodgeRight3() {
+  if(driving_state == standing) {
+    //Initial case
+    forward();
+  }
+  else {
+    //Working case
+    dodgeDistanceCounter--;
+
+    if(dodgeDistanceCounter <= 0) {
+      stand();
+      delay(MOTOR_DELAY);
+      rightRotation_90();
+      delay(MOTOR_DELAY);
+      dodge_state = dodge_NONE;
+    }
+  }
+}
 
 void leftRotation_90() {
   analogWrite(MOTOR_FL_FORW, 0);
