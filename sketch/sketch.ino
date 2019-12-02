@@ -47,6 +47,8 @@
 #define ACCELERATION_MAX_ITER 20
 #define ACCELERATION_PAUSE 200
 #define ROTATION_90_DELAY 1900
+#define MOTOR_DELAY 100
+#define BACKWARD_DELAY 500
 
 //Distances
 int distance_sensor_1;
@@ -88,9 +90,12 @@ void distanceMeasurement();
 //Driving Methods
 void initAcceleration();
 void forward();
+void backward();
 void stand();
 void leftRotation_90();
 void rightRotation_90();
+void leftCorrection();
+void rightCorrection();
 
 //Color Sensor Methods
 void readColor();
@@ -268,6 +273,28 @@ void stand() {
   driving_state = standing;
 }
 
+void leftCorrection() {
+  stand();
+  delay(MOTOR_DELAY);
+  backward();
+  delay(BACKWARD_DELAY);
+  stand();
+  delay(MOTOR_DELAY);
+  leftRotation_90();
+  delay(MOTOR_DELAY);
+}
+
+void rightCorrection() {
+  stand();
+  delay(MOTOR_DELAY);
+  backward();
+  delay(BACKWARD_DELAY);
+  stand();
+  delay(MOTOR_DELAY);
+  rightRotation_90();
+  delay(MOTOR_DELAY);
+}
+
 void leftRotation_90() {
   analogWrite(MOTOR_FL_FORW, 0);
   analogWrite(MOTOR_FL_BACKW, driving_speed);
@@ -331,6 +358,13 @@ void forward() {
   motor_4_forw(driving_speed);
 
   driving_state = straight;
+}
+
+void backward() {
+  motor_1_backw(accelerating_speed);
+  motor_2_backw(accelerating_speed);
+  motor_3_backw(accelerating_speed);
+  motor_4_backw(accelerating_speed);
 }
 #pragma endregion
 
