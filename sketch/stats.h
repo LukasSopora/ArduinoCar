@@ -1,10 +1,10 @@
 enum Driving_State {
     standing = 0,
     accelerating,
-    backwarding,
+    backwarding, /*muss aus irgendwinem grund drin bleiben --> Arduino IDE ist kacke*/
     straight,
-    left_cornering,
-    right_cornering
+    left_cornering, /*same here...*/
+    right_cornering /*same here...*/
 };
 
 enum Dodge_State {
@@ -14,7 +14,7 @@ enum Dodge_State {
     dodge_right_step_3,
     dodge_left_step_1,
     dodge_left_step_2,
-    dodge_left_step3
+    dodge_left_step_3
 };
 
 enum Object_State {

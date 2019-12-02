@@ -50,6 +50,9 @@
 #define MOTOR_DELAY 100
 #define BACKWARD_DELAY 500
 
+//Dodge Distance Constants
+#define DODGE_DISTANCE_MAX_ITER 300
+
 //Distances
 int distance_sensor_1;
 int distance_sensor_2;
@@ -59,7 +62,7 @@ int distance_sensor_5;
 int distance_sensor_6;
 
 //Stats
-Driving_State driving_state = standing;
+Driving_State driving_state;
 Object_State object_State = nothing;
 Colors tcs_color = color_NONE;
 Dodge_State dodge_state = dodge_NONE;
@@ -97,6 +100,15 @@ void rightRotation_90();
 void leftCorrection();
 void rightCorrection();
 
+//Dodge Methods
+void dodgeRight1();
+void dodgeRight2();
+void dodgeRight3();
+
+void dodgeLeft1();
+void dodgeLeft2();
+void dodgeLeft3();
+
 //Color Sensor Methods
 void readColor();
 void initColorSensor();
@@ -113,6 +125,10 @@ double ratioBlue = 0;
 int accelerating_speed = 255;
 int accelerate_counter = 0;
 int driving_speed = 128;
+
+//Dodhe Variables
+int dodgeFreeCounter = 0;
+int dodgeDistanceCounter = 0;
 
 void setup() {
   setMotorPinModes();
@@ -294,6 +310,78 @@ void rightCorrection() {
   rightRotation_90();
   delay(MOTOR_DELAY);
 }
+
+void dodgeLeft1() {
+  if(dodge_state == dodge_NONE && driving_state == standing) {
+    //Initial Case
+    leftRotation_90();
+    forward();
+    dodgeDistanceCounter = 0;
+    dodgeFreeCounter = 0;
+    dodge_state = dodge_left_step_1;
+  }
+  else if(dodge_state == dodge_left_step_1) {
+    
+    //Working Case
+    dodgeDistanceCounter++;
+
+    if(distance_sensor_5 > 15) {
+      dodgeFreeCounter++;
+    }
+
+    if(dodgeFreeCounter >= DODGE_DISTANCE_MAX_ITER) {
+      stand();
+      delay(MOTOR_DELAY);
+      rightRotation_90();
+      delay(MOTOR_DELAY);
+      dodge_state = dodge_left_step_2;
+    }
+  }
+}
+void dodgeLeft2() {
+  if(driving_state == standing) {
+    //Initial Case
+    dodgeFreeCounter = 0;
+    forward();
+  }
+  else {
+    //Working case
+    if(distance_sensor_5 > 15) {
+      dodgeFreeCounter++;
+    }
+
+    if(dodgeFreeCounter >= DODGE_DISTANCE_MAX_ITER) {
+      stand();
+      delay(MOTOR_DELAY);
+      rightRotation_90();
+      delay(MOTOR_DELAY);
+      dodge_state = dodge_left_step_3;
+    }
+  }
+}
+
+void dodgeLeft3() {
+  if(driving_state == standing) {
+    //Initial case
+    forward();
+  }
+  else {
+    //Working case
+    dodgeDistanceCounter--;
+
+    if(dodgeDistanceCounter <= 0) {
+      stand();
+      delay(MOTOR_DELAY);
+      leftRotation_90();
+      delay(MOTOR_DELAY);
+      dodge_state = dodge_NONE;
+    }
+  }
+}
+
+void dodgeRight1() {}
+void dodgeRight2() {}
+void dodgeRight3() {}
 
 void leftRotation_90() {
   analogWrite(MOTOR_FL_FORW, 0);
