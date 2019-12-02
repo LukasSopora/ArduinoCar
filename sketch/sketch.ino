@@ -63,8 +63,8 @@ int distance_sensor_6;
 //Stats
 Driving_State driving_state = standing;
 Object_State object_State = nothing;
-Line_State line_State = not_recognized;
 Colors tcs_color = color_NONE;
+Dodge_State dodge_state = dodge_NONE;
 
 //TODO: Check if you can define multiple sensors with same trigger pin
 NewPing sensor_1(TRIG_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
@@ -92,15 +92,10 @@ void distanceMeasurement();
 //Driving Methods
 void initAcceleration();
 void forward();
-void backward();
 void stand();
 void leftRotation_90();
 void rightRotation_90();
-void initLeftCorner();
-void initRightCorner();
 void resetCorner();
-void kurve(String richtung);
-void vorbeifahren(String richtung);
 
 //Color Sensor Methods
 void readColor();
@@ -126,7 +121,6 @@ void setup() {
 
   driving_state = standing;
   object_State = nothing;
-  line_State = not_recognized;
 
   initColorSensor();
 
@@ -135,34 +129,32 @@ void setup() {
 
 void loop() {
   distanceMeasurement();
+
   readColor();
-  if(distance_sensor_2 < 15 && driving_state != standing){
-    if(distance_sensor_1 < 15 && distance_sensor_3 < 15){
-      Serial.println("Stop");
-      stand();
-      driving_state = standing;
-    }
-    else if(distance_sensor_1 < 15){
-      Serial.println("rechts vorbeifahren");
-      vorbeifahren("rechts");
-    }
-    else if(distance_sensor_3 < 15){
-      Serial.println("links vorbeifahren");
-      vorbeifahren("links");
-    }
-  }
-  else if(distance_sensor_2 >= 15 && driving_state != straight) {
-    Serial.println("Start");
-    forward();
-    driving_state = straight;
-  }
+
   switch (tcs_color)
   {
-  case color_red: Serial.println("Red, Rechtskurve"); kurve("rechts"); break;
-  case color_blue: Serial.println("Blue, Linkskurve"); kurve("links"); break;  
+  case color_red: Serial.println("Red"); break;
+  case color_blue: Serial.println("Blue"); break;
+  case color_NONE: Serial.println("None"); break;
+  
   default: Serial.println("Fail"); break;
   }
-  //print_states();
+  
+  /*
+  if(distance_sensor_1 < 10 && driving_speed != standing) {
+    Serial.println("Stop");
+    //stand();
+    driving_state = standing;
+  }
+  else if(distance_sensor_1 >= 10 && driving_state == standing) {
+    Serial.println("Start");
+    //initAcceleration();
+    driving_state = accelerating;
+  }
+  */
+
+
   /*
   //Increase counter in case the car is cornering
   if(driving_state == left_cornering || driving_state == right_cornering) {
@@ -177,9 +169,6 @@ void print_states() {
 
   Serial.print("Object State: ");
   Serial.println(object_State);
-
-  Serial.print("Line State: ");
-  Serial.println(line_State);
 
   Serial.print("Distances: ");
   Serial.print(distance_sensor_1);
@@ -350,26 +339,6 @@ void rightRotation_90() {
   analogWrite(MOTOR_BR_BACKW, 0);
 }
 
-void initLeftCorner() {
-  motor_1_forw(CORNER_SPEED_INSIDE);
-  motor_2_forw(CORNER_SPEED_OUTSIDE);
-  motor_3_forw(CORNER_SPEED_INSIDE);
-  motor_4_forw(CORNER_SPEED_OUTSIDE);
-
-  corner_counter = 0;
-  driving_state = left_cornering;
-}
-
-void initRightCorner() {
-  motor_1_forw(CORNER_SPEED_OUTSIDE);
-  motor_2_forw(CORNER_SPEED_INSIDE);
-  motor_3_forw(CORNER_SPEED_OUTSIDE);
-  motor_4_forw(CORNER_SPEED_INSIDE);
-
-  corner_counter = 0;
-  driving_state = right_cornering;
-}
-
 void forward() {
   motor_1_forw(driving_speed);
   motor_2_forw(driving_speed);
@@ -378,109 +347,6 @@ void forward() {
 
   driving_state = straight;
 }
-
-void backward(){
-  motor_1_backw(driving_speed);
-  motor_2_backw(driving_speed);
-  motor_3_backw(driving_speed);
-  motor_4_backw(driving_speed);
-}
-
-void kurve(String richtung){
-  stand();
-  delay(100);
-  backward();
-  delay(500);
-  stand();
-  delay(100);
-  if(richtung == "rechts"){
-    rightRotation_90();
-  }
-  else if(richtung == "links"){
-    leftRotation_90();
-  }
-  delay(100);
-}
-
-void vorbeifahren(String richtung){
-  stand();
-  delay(100);
-  if(richtung == "rechts"){
-    rightRotation_90();
-    delay(100);
-    int counter = 0;
-    distanceMeasurement();
-    forward();
-    while(distance_sensor_4 < 15){
-      distanceMeasurement();
-      delay(10);
-      counter++;
-    }
-    delay(300);
-    stand();
-    delay(100);
-    leftRotation_90();
-    delay(100);
-    distanceMeasurement();
-    forward();
-    while(distance_sensor_4 < 15){
-      distanceMeasurement();
-      delay(10);
-    }
-    delay(300);
-    stand();
-    delay(100);
-    leftRotation_90();
-    delay(100);
-    forward();
-    delay(300);
-    while(counter>=0){
-      delay(10);
-    }
-    stand();
-    delay(100);
-    rightRotation_90();
-    delay(100);
-  }
-  else if(richtung == "links"){
-    leftRotation_90();
-    delay(100);
-    int counter = 0;
-    distanceMeasurement();
-    forward();
-    while(distance_sensor_5 < 15){
-      distanceMeasurement();
-      delay(10);
-      counter++;
-    }
-    delay(300);
-    stand();
-    delay(100);
-    rightRotation_90();
-    delay(100);
-    distanceMeasurement();
-    forward();
-    while(distance_sensor_5 < 15){
-      distanceMeasurement();
-      delay(10);
-    }
-    delay(300);
-    stand();
-    delay(100);
-    rightRotation_90();
-    delay(100);
-    forward();
-    delay(300);
-    while(counter>=0){
-      delay(10);
-    }
-    stand();
-    delay(100);
-    leftRotation_90();
-    delay(100);
-  }
-}
-
 #pragma endregion
 
 #pragma region Motor Handling Methods

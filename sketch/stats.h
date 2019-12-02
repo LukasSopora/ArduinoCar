@@ -1,10 +1,20 @@
 enum Driving_State {
     standing = 0,
     accelerating,
-    backward,
+    backwarding,
     straight,
     left_cornering,
     right_cornering
+};
+
+enum Dodge_State {
+    dodge_NONE = 0,
+    dodge_right_step_1,
+    dodge_right_step_2,
+    dodge_right_step_3,
+    dodge_left_step_1,
+    dodge_left_step_2,
+    dodge_left_step3
 };
 
 enum Object_State {
@@ -15,11 +25,6 @@ enum Object_State {
     left,
     right,
     back
-};
-
-enum Line_State {
-    not_recognized = 0,
-    recognized
 };
 
 enum Colors {
