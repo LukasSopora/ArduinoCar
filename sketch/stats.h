@@ -1,6 +1,7 @@
 enum Driving_State {
     standing = 0,
     accelerating,
+    backward,
     straight,
     left_cornering,
     right_cornering
