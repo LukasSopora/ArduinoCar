@@ -5,14 +5,14 @@
 #define TRIG_PIN_1 53
 #define TRIG_PIN_2 47
 #define TRIG_PIN_3 45
-#define TRIG_PIN_4 28
+#define TRIG_PIN_4 42
 #define TRIG_PIN_5 30
 #define TRIG_PIN_6 32
 
 #define ECHO_PIN_1 51
 #define ECHO_PIN_2 49
 #define ECHO_PIN_3 43
-#define ECHO_PIN_4 69
+#define ECHO_PIN_4 40
 #define ECHO_PIN_5 69
 #define ECHO_PIN_6 69 
 
@@ -46,7 +46,8 @@
 //Acceleration Configuration
 #define ACCELERATION_MAX_ITER 20
 #define ACCELERATION_PAUSE 200
-#define ROTATION_90_DELAY 1900
+#define LEFT_ROTATION_90_DELAY 720
+#define RIGHT_ROTATION_90_DELAY 680
 #define MOTOR_DELAY 100
 #define BACKWARD_DELAY 500
 
@@ -141,24 +142,41 @@ void setup() {
   Serial.begin(9600);
 }
 
-void loop() {
-
+void loop() {  
   distanceMeasurement();
   readColor();
 
   switch (dodge_state)
   {
-  case dodge_left_step_1: dodgeLeft1(); break;
-  case dodge_left_step_2: dodgeLeft2(); break;
-  case dodge_left_step_3: dodgeLeft3(); break;
-  case dodge_right_step_1: dodgeLeft1(); break;
-  case dodge_right_step_2: dodgeLeft2(); break;
-  case dodge_right_step_3: dodgeLeft3(); break;
+    case dodge_left_step_1:
+      Serial.println("DL 1");
+      dodgeLeft1();
+      break;
+    case dodge_left_step_2:
+      Serial.println("DL 2");  
+      dodgeLeft2();
+      break;
+    case dodge_left_step_3:
+      Serial.println("DL 3");
+      dodgeLeft3(); 
+      break;
+    case dodge_right_step_1: 
+      Serial.println("DR 1");
+      dodgeLeft1(); 
+      break;
+    case dodge_right_step_2: 
+      Serial.println("DR 2");
+      dodgeLeft2(); 
+      break;
+    case dodge_right_step_3:
+      Serial.println("DR 3");
+      dodgeLeft3(); 
+      break;
   default:
     break;
   }
 
-  if(distance_sensor_2 < 15 && driving_state != standing){
+  if(distance_sensor_2 < 15 && driving_state != standing && dodge_state == dodge_NONE){
     if(distance_sensor_1 < 15 && distance_sensor_3 < 15){
       //Road blocked
       Serial.println("Stop");
@@ -167,14 +185,14 @@ void loop() {
     }
     else if(distance_sensor_1 < 15){
       //Left part free
-      Serial.println("links vorbeifahren");
-      dodgeLeft1();
+      Serial.println("Rechts vorbeifahren");
+      dodgeRight1();
       //vorbeifahren("rechts");
     }
     else if(distance_sensor_3 < 15){
       //Right part free
-      Serial.println("rechts vorbeifahren");
-      dodgeRight1();
+      Serial.println("Links vorbeifahren");
+      dodgeLeft1();
       //vorbeifahren("links");
     }
   }
@@ -188,11 +206,11 @@ void loop() {
   {
     case color_red: 
       Serial.println("Red");
-      //leftCorrection();
+      leftCorrection();
       break;
     case color_blue:
       Serial.println("Blue");
-      //rightCorrection();
+      rightCorrection();
       break;
     case color_NONE:
       //Serial.println("None");
@@ -493,7 +511,7 @@ void leftRotation_90() {
   analogWrite(MOTOR_BR_FORW, driving_speed);
   analogWrite(MOTOR_BR_BACKW, 0);
 
-  delay(ROTATION_90_DELAY);
+  delay(LEFT_ROTATION_90_DELAY);
 
   analogWrite(MOTOR_FL_FORW, 0);
   analogWrite(MOTOR_FL_BACKW, 0);
@@ -521,7 +539,7 @@ void rightRotation_90() {
   analogWrite(MOTOR_BR_FORW, 0);
   analogWrite(MOTOR_BR_BACKW, driving_speed);
 
-  delay(ROTATION_90_DELAY);
+  delay(RIGHT_ROTATION_90_DELAY);
 
   analogWrite(MOTOR_FL_FORW, 0);
   analogWrite(MOTOR_FL_BACKW, 0);
