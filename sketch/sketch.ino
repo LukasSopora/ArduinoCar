@@ -146,27 +146,60 @@ void loop() {
   distanceMeasurement();
   readColor();
 
+  switch (dodge_state)
+  {
+  case dodge_left_step_1: dodgeLeft1(); break;
+  case dodge_left_step_2: dodgeLeft2(); break;
+  case dodge_left_step_3: dodgeLeft3(); break;
+  case dodge_right_step_1: dodgeLeft1(); break;
+  case dodge_right_step_2: dodgeLeft2(); break;
+  case dodge_right_step_3: dodgeLeft3(); break;
+  default:
+    break;
+  }
+
+  if(distance_sensor_2 < 15 && driving_state != standing){
+    if(distance_sensor_1 < 15 && distance_sensor_3 < 15){
+      //Road blocked
+      Serial.println("Stop");
+      stand();
+      driving_state = standing;
+    }
+    else if(distance_sensor_1 < 15){
+      //Left part free
+      Serial.println("links vorbeifahren");
+      dodgeLeft1();
+      //vorbeifahren("rechts");
+    }
+    else if(distance_sensor_3 < 15){
+      //Right part free
+      Serial.println("rechts vorbeifahren");
+      dodgeRight1();
+      //vorbeifahren("links");
+    }
+  }
+  else if(distance_sensor_2 >= 15 && driving_state != straight) {
+    Serial.println("Start");
+    forward();
+    driving_state = straight;
+  }
+
   switch (tcs_color)
   {
-    case color_red: Serial.println("Red"); break;
-    case color_blue: Serial.println("Blue"); break;
-    case color_NONE: Serial.println("None"); break;
+    case color_red: 
+      Serial.println("Red");
+      //leftCorrection();
+      break;
+    case color_blue:
+      Serial.println("Blue");
+      //rightCorrection();
+      break;
+    case color_NONE:
+      //Serial.println("None");
+      break;
   
     default: Serial.println("Fail"); break;
   }
-  
-  /*
-  if(distance_sensor_1 < 10 && driving_speed != standing) {
-    Serial.println("Stop");
-    //stand();
-    driving_state = standing;
-  }
-  else if(distance_sensor_1 >= 10 && driving_state == standing) {
-    Serial.println("Start");
-    //initAcceleration();
-    driving_state = accelerating;
-  }
-  */
 }
 
 void print_states() {
