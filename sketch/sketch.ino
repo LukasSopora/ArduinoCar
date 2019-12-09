@@ -39,6 +39,11 @@
 #define TCS_S3 10
 #define TCS_sensor_out 9
 
+//Light Sensor Configuration
+#define LED_PIN 33
+#define LIGHTSENSOR_PIN A2
+#define LIGHT_THRESHOLD 100
+
 //RGB ratio for color recognizion
 #define COLOR_RATIO 0.7
 
@@ -111,6 +116,9 @@ void dodgeLeft3();
 void readColor();
 void initColorSensor();
 
+//Light Sensor Methods
+void initLightSensor();
+
 //Color Sensor Variables
 int freqRed = 0;
 int freqGreen = 0;
@@ -129,6 +137,9 @@ int dodgeFreeCounter = 0;
 int dodgeDistanceCounter = 0;
 int dodgeMinCounter = 0;
 
+//Light Sensor Variables
+int lightVal = 0;
+
 void setup() {
   setMotorPinModes();
 
@@ -138,14 +149,24 @@ void setup() {
 
   initColorSensor();
 
+  initLightSensor();
+
   Serial.begin(9600);
 }
 
 void loop() {
 
-    
   distanceMeasurement();
   readColor();
+
+  //Automatic lights
+  lightVal = analogRead(LIGHTSENSOR_PIN);
+  if(lightVal > LIGHT_THRESHOLD) {
+    digitalWrite(LED_PIN, LOW);
+  }
+  else {
+    digitalWrite(LED_PIN, HIGH);
+  }
 
   Serial.println(distance_sensor_2);
   
@@ -326,6 +347,11 @@ void readColor() {
   }
 }
 #pragma endregion
+
+void initLightSensor() {
+  pinMode(LIGHTSENSOR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+}
 
 #pragma region Movement Methods
 void initAcceleration() {
