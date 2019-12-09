@@ -57,7 +57,7 @@
 
 //Dodge Distance Constants
 #define DODGE_DISTANCE_MAX_ITER 12
-#define DODGE_DISTANCE_MIN_ITER 5
+#define DODGE_DISTANCE_MIN_ITER 15
 
 //Distances
 int distance_sensor_1;
@@ -434,7 +434,7 @@ void dodgeLeft2() {
 
     dodgeMinCounter++;
 
-    if(dodgeMinCounter >= DODGE_DISTANCE_MIN_ITER && distance_sensor_5 > 15) {
+    if(dodgeMinCounter >= DODGE_DISTANCE_MIN_ITER && distance_sensor_5 > 35) {
       dodgeFreeCounter++;
     }
 
@@ -512,7 +512,7 @@ void dodgeRight2() {
 
     Serial.println("Working DR 2");
 
-    if(dodgeMinCounter >= DODGE_DISTANCE_MIN_ITER && distance_sensor_4 > 15) {
+    if(dodgeMinCounter >= DODGE_DISTANCE_MIN_ITER && distance_sensor_4 > 35) {
       dodgeFreeCounter++;
     }
 
