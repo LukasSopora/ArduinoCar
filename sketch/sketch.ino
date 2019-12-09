@@ -56,8 +56,8 @@
 #define BACKWARD_DELAY 500
 
 //Dodge Distance Constants
-#define DODGE_DISTANCE_MAX_ITER 12
-#define DODGE_DISTANCE_MIN_ITER 15
+#define DODGE_DISTANCE_MAX_ITER 15
+#define DODGE_DISTANCE_MIN_ITER 17
 
 //Distances
 int distance_sensor_1;
